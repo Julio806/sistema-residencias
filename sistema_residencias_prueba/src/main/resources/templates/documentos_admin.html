@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Documentos del Alumno</title>
+
+    <!-- Bootstrap + Iconos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- CSRF -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+    <style>
+        body {
+            background: linear-gradient(to right, #f7f8fc, #eef1f7);
+            min-height: 100vh;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        .navbar {
+            background: #0d6efd;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+
+        .btn-outline-dark:hover {
+            background-color: #343a40;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <span class="navbar-brand">Residencias TECNM - Panel</span>
+        <form th:action="@{/logout}" method="post" class="d-flex">
+            <button class="btn btn-outline-light">Cerrar sesión</button>
+        </form>
+    </div>
+</nav>
+
+<div class="container mt-4">
+
+    <!-- Volver -->
+    <div class="mb-3">
+        <a th:href="@{/panel}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left-circle me-1"></i> Volver al Panel
+        </a>
+    </div>
+
+    <!-- Info Alumno -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <i class="bi bi-person-badge-fill me-1"></i> Información del Alumno
+        </div>
+        <div class="card-body row">
+            <div class="col-md-6">
+                <p><strong>Nombre:</strong> <span th:text="${alumno.nombres + ' ' + alumno.apellidos}"></span></p>
+                <p><strong>No. Control:</strong> <span th:text="${alumno.numeroControl}"></span></p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Carrera:</strong> <span th:text="${alumno.carrera}"></span></p>
+                <p><strong>Proyecto:</strong> <span th:text="${alumno.nombreProyecto}"></span></p>
+                <p><strong>Periodo:</strong> <span th:text="${alumno.periodo?.nombre}">Sin asignar</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documentos -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <i class="bi bi-folder-check me-1"></i> Documentos del Alumno
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light text-center">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="doc : ${documentos}">
+                    <td th:text="${doc.nombre}"></td>
+                    <td class="text-center">
+                        <span class="badge" th:classappend="${doc.badgeClass}" th:text="${doc.estado}"></span>
+                    </td>
+                    <td th:text="${#temporals.format(doc.fechaSubida, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td class="text-center">
+                        <div class="d-flex flex-wrap justify-content-center gap-1">
+
+                            <!-- Aceptar -->
+                            <button type="button"
+                                    class="btn btn-outline-primary btn-sm"
+                                    title="Aceptar"
+                                    th:attr="data-id=${doc.id}"
+                                    onclick="confirmarAccion(this, 'aceptar')">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+
+                            <!-- Rechazar -->
+                            <button type="button"
+                                    class="btn btn-outline-dark btn-sm"
+                                    title="Rechazar"
+                                    th:attr="data-id=${doc.id}"
+                                    onclick="rechazarDocumento(this)">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+
+                            <!-- Descargar -->
+                            <a th:href="@{'/documentos/descargar/' + ${doc.id}}" class="btn btn-outline-success btn-sm" title="Descargar">
+                                <i class="bi bi-download"></i>
+                            </a>
+
+                            <!-- Ver -->
+                            <a th:href="@{'/documentos/ver/' + ${doc.id}}" class="btn btn-outline-secondary btn-sm" title="Ver" target="_blank">
+                                <i class="bi bi-eye"></i>
+                            </a>
+
+                            <!-- Eliminar -->
+                            <button type="button"
+                                    class="btn btn-outline-danger btn-sm"
+                                    title="Eliminar"
+                                    th:attr="data-id=${doc.id}"
+                                    onclick="confirmarAccion(this, 'eliminar')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+
+                        </div>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(documentos)}">
+                    <td colspan="4" class="text-center text-muted">No hay documentos subidos.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function confirmarAccion(btn, tipo) {
+        const id = btn.getAttribute("data-id");
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute("content");
+
+        let url = "";
+        let titulo = "";
+        let texto = "";
+        let icono = "";
+
+        switch (tipo) {
+            case "eliminar":
+                url = "/documentos/eliminar/" + id;
+                titulo = "¿Eliminar documento?";
+                texto = "Esta acción no se puede deshacer.";
+                icono = "warning";
+                break;
+            case "aceptar":
+                url = "/documentos/aceptar/" + id;
+                titulo = "¿Aceptar documento?";
+                texto = "El documento será marcado como aceptado.";
+                icono = "success";
+                break;
+        }
+
+        Swal.fire({
+            title: titulo,
+            text: texto,
+            icon: icono,
+            showCancelButton: true,
+            confirmButtonColor: "#0d6efd",
+            cancelButtonColor: "#6c757d",
+            confirmButtonText: "Confirmar",
+            cancelButtonText: "Cancelar"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.createElement("form");
+                form.method = "post";
+                form.action = url;
+
+                const csrfInput = document.createElement("input");
+                csrfInput.type = "hidden";
+                csrfInput.name = "_csrf";
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+
+    function rechazarDocumento(btn) {
+        const id = btn.getAttribute("data-id");
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute("content");
+
+        Swal.fire({
+            title: 'Rechazar Documento',
+            html:
+                '<label>Motivo:</label>' +
+                '<textarea id="motivo" class="swal2-textarea" placeholder="Motivo del rechazo"></textarea>' +
+                '<label>Fecha límite:</label>' +
+                '<input type="date" id="fechaLimite" class="swal2-input">',
+            showCancelButton: true,
+            confirmButtonText: 'Rechazar',
+            cancelButtonText: 'Cancelar',
+            focusConfirm: false,
+            preConfirm: () => {
+                const motivo = Swal.getPopup().querySelector('#motivo').value;
+                const fecha = Swal.getPopup().querySelector('#fechaLimite').value;
+                if (!motivo || !fecha) {
+                    Swal.showValidationMessage(`¡Debes completar ambos campos!`);
+                }
+                return { motivo: motivo, fecha: fecha };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.createElement("form");
+                form.method = "post";
+                form.action = "/documentos/rechazar/" + id;
+
+                const csrfInput = document.createElement("input");
+                csrfInput.type = "hidden";
+                csrfInput.name = "_csrf";
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+
+                const motivoInput = document.createElement("input");
+                motivoInput.type = "hidden";
+                motivoInput.name = "motivo";
+                motivoInput.value = result.value.motivo;
+                form.appendChild(motivoInput);
+
+                const fechaInput = document.createElement("input");
+                fechaInput.type = "hidden";
+                fechaInput.name = "fechaLimite";
+                fechaInput.value = result.value.fecha;
+                form.appendChild(fechaInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+</script>
+
+<!-- Mensajes flash -->
+<script th:if="${mensaje != null}">
+    Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: [[${mensaje}]],
+        timer: 3000,
+        showConfirmButton: false
+    });
+</script>
+
+<script th:if="${error != null}">
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: [[${error}]],
+        timer: 4000,
+        showConfirmButton: false
+    });
+</script>
+
+</body>
+</html>

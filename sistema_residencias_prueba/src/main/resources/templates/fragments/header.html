@@ -1,0 +1,24 @@
+<!-- fragments/header.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+
+<!-- Fragmento del encabezado oficial -->
+<th:block th:fragment="headerGobierno">
+
+
+    <!-- Contenedor blanco -->
+    <div class="container-fluid bg-white py-2">
+        <div class="d-flex justify-content-center">
+            <img th:src="@{stactic/img/encabezado_tecnm.png}"
+                 class="img-fluid"
+                 alt="Encabezado Gobierno de México - SEP - TecNM"
+                 style="max-width: 100%; height: auto;">
+        </div>
+    </div>
+
+</th:block>
+
+</body>
+</html>

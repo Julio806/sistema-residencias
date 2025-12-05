@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Alumnos - [[${periodo}]]</title>
+</head>
+<body>
+<h1>Alumnos - Periodo [[${periodo}]]</h1>
+
+<div th:if="${alumnos.isEmpty()}">
+    <p>No hay alumnos registrados para este periodo.</p>
+    <a th:href="@{'/alumnos/' + ${periodo} + '/nuevo'}">Agregar alumno</a>
+</div>
+
+<div th:unless="${alumnos.isEmpty()}">
+    <table border="1">
+        <thead>
+        <tr>
+            <th>Número de Control</th>
+            <th>Nombre</th>
+            <th>Carrera</th>
+            <th>Proyecto</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="a : ${alumnos}">
+            <td th:text="${a.numeroControl}"></td>
+            <td th:text="${a.nombres} + ' ' + ${a.apellidos}"></td>
+            <td th:text="${a.carrera}"></td>
+            <td th:text="${a.nombreProyecto}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

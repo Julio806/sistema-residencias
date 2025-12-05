@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Periodo Académico</title>
+
+    <!-- Bootstrap & Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --light-bg: #f5f7ff;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            background-color: var(--card-bg);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            max-width: 600px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background-color: var(--primary-color);
+            color: #fff;
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 1.4rem;
+            border-bottom: none;
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            border-radius: 8px;
+            padding: 12px;
+            transition: 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background-color: #adb5bd;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-calendar2-plus me-2"></i>Nuevo Periodo Académico
+    </div>
+    <div class="card-body">
+        <form id="periodoForm" th:action="@{/crear-periodo}" th:object="${periodo}" method="post">
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-pencil-square me-2"></i>Nombre del periodo</label>
+                <input type="text" th:field="*{nombre}" class="form-control" placeholder="Ej: Ago-Dic 2025" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label"><i class="bi bi-calendar-date me-2"></i>Fecha de inicio</label>
+                    <input type="date" th:field="*{fechaInicio}" class="form-control" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label"><i class="bi bi-calendar-check me-2"></i>Fecha de fin</label>
+                    <input type="date" th:field="*{fechaFin}" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label"><i class="bi bi-toggle-on me-2"></i>¿Activo?</label>
+                <select th:field="*{activo}" class="form-select">
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a th:href="@{/panel}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save me-2"></i>Guardar Periodo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById("periodoForm").addEventListener("submit", function (e) {
+        e.preventDefault(); // Evita el envío inmediato del formulario
+
+        Swal.fire({
+            title: "¿Guardar este periodo?",
+            text: "Verifica que los datos sean correctos antes de continuar.",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: "#4361ee",
+            cancelButtonColor: "#adb5bd",
+            confirmButtonText: "Sí, guardar",
+            cancelButtonText: "Cancelar",
+            background: "#ffffff",
+            color: "#333",
+            backdrop: `
+                rgba(67,97,238,0.2)
+                left top
+                no-repeat
+            `
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: "¡Guardado!",
+                    text: "El periodo académico fue creado exitosamente.",
+                    icon: "success",
+                    confirmButtonColor: "#4361ee"
+                }).then(() => {
+                    e.target.submit(); // Envía el formulario real
+                });
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

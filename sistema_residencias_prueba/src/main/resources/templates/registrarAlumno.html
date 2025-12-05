@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Registrar Alumno</title></head>
+<body>
+<h2>Registro de Alumno</h2>
+<form th:action="@{/guardarAlumno}" th:object="${alumno}" method="post">
+    <input type="text" th:field="*{nombres}" placeholder="Nombres"><br>
+    <input type="text" th:field="*{apellidos}" placeholder="Apellidos"><br>
+    <input type="text" th:field="*{numeroControl}" placeholder="No. Control"><br>
+    <input type="text" th:field="*{carrera}" placeholder="Carrera"><br>
+    <input type="text" th:field="*{nombreProyecto}" placeholder="Proyecto"><br>
+    <label>Periodo académico:</label>
+    <select th:field="*{periodo}">
+        <option th:each="p : ${periodos}" th:value="${p.id}" th:text="${p.nombre}"></option>
+    </select><br><br>
+    <button type="submit">Guardar</button>
+</form>
+</body>
+</html>
